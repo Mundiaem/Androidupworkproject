@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1025665023365",
+    "firebase_url": "https://golive-55c2c.firebaseio.com",
+    "project_id": "golive-55c2c",
+    "storage_bucket": "golive-55c2c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025665023365:android:c203682531e521c9",
+        "android_client_info": {
+          "package_name": "com.ict2105_team05_2017"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025665023365-s1j1hn613f28chbvgfjnmkaktkjoesh8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgMa9t07HF09Mt8j9J3z_7LqKMIa7ilRk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025665023365-s1j1hn613f28chbvgfjnmkaktkjoesh8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
