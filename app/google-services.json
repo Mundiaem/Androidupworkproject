@@ -1,27 +1,33 @@
 {
   "project_info": {
-    "project_number": "1025665023365",
-    "firebase_url": "https://golive-55c2c.firebaseio.com",
-    "project_id": "golive-55c2c",
-    "storage_bucket": "golive-55c2c.appspot.com"
+    "project_number": "574802249590",
+    "project_id": "ict2105team052017"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1025665023365:android:c203682531e521c9",
+        "mobilesdk_app_id": "1:574802249590:android:c203682531e521c9",
         "android_client_info": {
           "package_name": "com.ict2105_team05_2017"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1025665023365-s1j1hn613f28chbvgfjnmkaktkjoesh8.apps.googleusercontent.com",
+          "client_id": "574802249590-rpt62mdosl6oah74d0s2ot8tgouad2e3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ict2105_team05_2017",
+            "certificate_hash": "6FC12EEF79C9AD376FF4E261DEC8A40DE00A6968"
+          }
+        },
+        {
+          "client_id": "574802249590-oul14be3bieq2v7v2lv2vr3scmpi46ut.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDgMa9t07HF09Mt8j9J3z_7LqKMIa7ilRk"
+          "current_key": "AIzaSyBa4eVM8J4aiwWvGDssE8Ac9LKWZP6WRNI"
         }
       ],
       "services": {
@@ -29,16 +35,11 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "1025665023365-s1j1hn613f28chbvgfjnmkaktkjoesh8.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
-          "status": 2
+          "status": 1
         }
       }
     }

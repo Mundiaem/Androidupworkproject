@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.ict2105_team05_2017.LoginActivity">
+    tools:context="com.ict2105_team05_2017.activities.LoginActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -52,11 +52,19 @@
             android:layout_height="wrap_content"
             android:text="Login with Google"
             android:id="@+id/buttonGoogleLogin"/>
+       <!-- <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"
+            android:padding="25dp"/>-->
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Login with Facebook"
+            android:text="@string/login_with_facebook"
             android:id="@+id/buttonFacebookLogin"/>
 
     </LinearLayout>
