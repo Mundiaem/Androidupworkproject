@@ -42,11 +42,12 @@ public class SendingNotification {
                     JSONObject root = new JSONObject();
                     JSONObject notification = new JSONObject();
                     notification.put("body", body);
-                    notification.put("title", title);
-                    notification.put("icon", icon);
+
 
                     JSONObject data = new JSONObject();
                     data.put("message", message);
+                    data.put("title", title);
+                    data.put("icon",icon);
                     root.put("notification", notification);
                     root.put("data", data);
                     root.put("registration_ids", recipients);

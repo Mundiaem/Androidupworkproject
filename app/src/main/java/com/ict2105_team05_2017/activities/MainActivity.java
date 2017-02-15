@@ -104,16 +104,6 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG, "This is the Token: " + refreshToken);
         assert currentUser != null;
         mFirebaseDatabase.child("users_data").child(currentUser.getUid()).child("token").setValue(refreshToken);
-        SendingNotification notification = new SendingNotification(this);
-        List<String> ids = new ArrayList<>();
-        ids.add(refreshToken);
-        String msg = "It is working";
-        JSONArray jsonArray = new JSONArray(ids);
-        String title = "New Friend Request";
-        String body = "This is the body of the Notification";
-        String icon = "no String Icons";
-        notification.sendMessage(jsonArray, title, body, icon, msg, "me");
-
     }
 
 }
