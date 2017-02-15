@@ -13,17 +13,26 @@ import android.view.ViewGroup;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.ict2105_team05_2017.R;
 import com.ict2105_team05_2017.adapters.FaceBookFreindsAdapter;
 import com.ict2105_team05_2017.model.Friends;
+import com.ict2105_team05_2017.model.User;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Macharia on 2/12/2017.
@@ -32,22 +41,25 @@ import java.util.List;
 public class FacebookFriendsFragment extends Fragment {
     private static final String TAG = FacebookFriendsFragment.class.getName();
     private FaceBookFreindsAdapter faceBookFreindsAdapter;
-    private List<Friends> friendsList = new ArrayList<>();
+    /*private List<Friends> friendsList = new ArrayList<>();*/
+    private List<User> userList = new ArrayList<>();
     private RecyclerView mRecylerView;
+    private FirebaseAuth mAuth;
 
-    private static List<Friends> extractIdsForJSON(JSONObject responseJson) {
-        List<Friends> friendsList1 = new ArrayList<>();
-        Friends friends = new Friends();
+
+    private DatabaseReference mFirebaseDatabase;
+    private FirebaseDatabase mFirebaseInstance;
+
+
+    private static String extractIdsForJSONIDs(JSONObject responseJson) {
+        String ids = null;
         JSONArray data = responseJson.optJSONArray("data");
         if (data != null) {
             for (int i = 0; i < data.length(); i++) {
-                String ids = data.optJSONObject(i).optString("id");
-                String names = data.optJSONObject(i).optString("name");
-                friends.setName(names);
-                friends.setId(ids);
-                friendsList1.add(friends);
+                ids = data.optJSONObject(i).optString("id");
+                Log.e(TAG, "This is the fb Id!! " + ids);
             }
-            return friendsList1;
+            return ids;
         }
         return null;
     }
@@ -84,7 +96,16 @@ public class FacebookFriendsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mRecylerView = (RecyclerView) view.findViewById(R.id.facebookFriends_RecyclerView);
         mRecylerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-       fetchFriends();
+        mAuth = FirebaseAuth.getInstance();
+
+        /*Getting reference to the node*/
+        mFirebaseInstance = FirebaseDatabase.getInstance();
+
+        // get reference to 'users' node
+        mFirebaseDatabase = mFirebaseInstance.getReference("usersCollection");
+        // Storing the app title to the node
+        mFirebaseInstance.getReference("app_title").setValue("ict2105team052017");
+        linkingIds(mFirebaseInstance, mFirebaseDatabase);
     }
 
     @Override
@@ -92,29 +113,87 @@ public class FacebookFriendsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
     }
 
-    private void fetchFriends() {
-        new GraphRequest(
-                AccessToken.getCurrentAccessToken(),
-                "/me/friends",
-                null,
-                HttpMethod.GET,
-                new GraphRequest.Callback() {
-                    public void onCompleted(GraphResponse response) {
-                        JSONObject responseJSON = response.getJSONObject();
-                        if (responseJSON != null) {
-                            Log.e(TAG, responseJSON.toString());
-                            friendsList = extractIdsForJSON(responseJSON);
 
-                            faceBookFreindsAdapter = new FaceBookFreindsAdapter(getContext(), friendsList);
-                            mRecylerView.setAdapter(faceBookFreindsAdapter);
-                            faceBookFreindsAdapter.notifyDataSetChanged();
-                        } else {
-                            Log.e(TAG, "Object is null");
+    private void linkingIds(FirebaseDatabase mFirebaseInstance, DatabaseReference mFirebaseDatabase) {
+        Query myUsersQuery = mFirebaseDatabase.child("users_data");
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String currentUserId = firebaseUser.getUid();
+        // User data change listener
+        // My top posts by number of stars
+        myUsersQuery.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (final DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    // TODO: handle the post
+                    String key = postSnapshot.getKey();
 
-                        }
-            /* handle the result */
+                    final User user = postSnapshot.getValue(User.class);
+                    String name = user.getName();
+                    String id = user.getId();
+                    if (!Objects.equals(currentUserId, id)) {
+                        Log.e(TAG, "This is the USer Id!! Current User " + id + name);
+
+
+                        ///Getting friends From FaceBook
+                        new GraphRequest(
+                                AccessToken.getCurrentAccessToken(),
+                                "/me/friends",
+                                null,
+                                HttpMethod.GET,
+                                response -> {
+                                    JSONObject responseJSON = response.getJSONObject();
+                                    if (responseJSON != null) {
+                                        Log.e(TAG, responseJSON.toString());
+
+                                        //Querying the USer
+                                        String fbId = user.getFacebookId();
+                                        Log.e(TAG, "This is the Id From FB " + fbId);
+                                        String userFBId = extractIdsForJSONIDs(responseJSON);
+
+                                        if (Objects.equals(fbId, userFBId)) {
+                                            Log.e(TAG, "This is the Id From FB !! is True " + userFBId + " " + fbId);
+                                            Friends friend = new Friends();
+                                            friend.setAfriendFromFb(true);
+                                            user.setFriends(friend);
+
+                                        } else {
+                                            Log.e(TAG, "This is the Id From FB !! is False" + userFBId + " " + fbId);
+                                            Friends friend = new Friends();
+                                            friend.setAfriendFromFb(false);
+                                            user.setFriends(friend);
+
+                                        }
+                                        userList.add(user);
+                                        faceBookFreindsAdapter = new FaceBookFreindsAdapter(getContext(), userList, FacebookFriendsFragment.this.mFirebaseInstance, FacebookFriendsFragment.this.mFirebaseDatabase);
+                                        mRecylerView.setAdapter(faceBookFreindsAdapter);
+                                        faceBookFreindsAdapter.notifyDataSetChanged();
+
+
+                                    } else {
+                                        Log.e(TAG, "Object is null");
+
+                                    }
+        /* handle the result */
+                                }
+                        ).executeAsync();
+
+                    } else {
+                        Log.e(TAG, "This is the USer Id!! " + id + name);
+
                     }
+
+
                 }
-        ).executeAsync();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+                // ...
+            }
+        });
     }
+
+
 }

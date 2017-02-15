@@ -1,8 +1,6 @@
 package com.ict2105_team05_2017.activities;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -10,52 +8,40 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.ict2105_team05_2017.R;
-import com.ict2105_team05_2017.activities.LoginActivity;
-import com.ict2105_team05_2017.adapters.FaceBookFreindsAdapter;
-import com.ict2105_team05_2017.facebookUtils.FetchFacebookFriends;
 import com.ict2105_team05_2017.fragments.CurrentFriendsFragment;
 import com.ict2105_team05_2017.fragments.FacebookFriendsFragment;
-import com.ict2105_team05_2017.model.Friends;
+import com.ict2105_team05_2017.utils.SendingNotification;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import bolts.Continuation;
-import bolts.Task;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getName();
     private FragmentManager manager;
-    private ProgressDialog mProgressDialog;
+    private DatabaseReference mFirebaseDatabase;
+    private FirebaseDatabase mFirebaseInstance;
 
-    private static Friends extractIdsForJSON(JSONObject responseJson) {
-        JSONArray data = responseJson.optJSONArray("data");
-        Friends friendList;
-        if (data != null) {
-            String[] ids = new String[data.length()];
-            for (int i = 0; i < data.length(); i++) {
-                ids[i] = data.optJSONObject(i).optString("id");
-            }
-        }
-        return null;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+          /*Getting reference to the node*/
+        mFirebaseInstance = FirebaseDatabase.getInstance();
+
+        // get reference to 'users' node
+        mFirebaseDatabase = mFirebaseInstance.getReference("usersCollection");
+        // Storing the app title to the node
+        mFirebaseInstance.getReference("app_title").setValue("ict2105team052017");
 
         manager = getSupportFragmentManager();
         FacebookFriendsFragment FacebookFriendsFragmentFragment = new FacebookFriendsFragment();
@@ -66,37 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
-    private void onPhotoReady(final Uri pathToImage) {
-        mProgressDialog = ProgressDialog.show(this, getString(R.string.loading), getString(R.string.please_wait));
-        FetchFacebookFriends.getUserFriends()
-                .onSuccessTask(new Continuation<String[], Task<List<Friends>>>() {
-                    @Override
-                    public Task<List<Friends>> then(Task<String[]> task) throws Exception {
-                        /*return ParseFacebookUtils.fetchFriendForId(task.getResult());*/
-                        return null;
-                    }
-                })
-                .onSuccessTask(new Continuation<List<Friends>, Task<Void>>() {
-                    @Override
-                    public Task<Void> then(Task<List<Friends>> task) throws Exception {
-                        /*savePhoto(pathToImage, task.getResult());*/
-                        return null;
-                    }
-                })
-                .continueWith(new Continuation<Void, Void>() {
-                    @Override
-                    public Void then(Task<Void> task) throws Exception {
-                        if (task.getError() != null)
-                            task.getError().printStackTrace();
-
-                        if (mProgressDialog != null)
-                            mProgressDialog.cancel();
-
-                        return null;
-                    }
-                }, Task.UI_THREAD_EXECUTOR);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateFirebaseToken();
     }
 
     private void onSignOutSuccess() {
@@ -138,6 +97,23 @@ public class MainActivity extends AppCompatActivity {
         if (user == null) {
             onSignOutSuccess();
         }
+    }
+    private void updateFirebaseToken() {
+        FirebaseUser currentUser= FirebaseAuth.getInstance().getCurrentUser();
+        String refreshToken = FirebaseInstanceId.getInstance().getToken();
+        Log.e(TAG, "This is the Token: " + refreshToken);
+        assert currentUser != null;
+        mFirebaseDatabase.child("users_data").child(currentUser.getUid()).child("token").setValue(refreshToken);
+        SendingNotification notification = new SendingNotification(this);
+        List<String> ids = new ArrayList<>();
+        ids.add(refreshToken);
+        String msg = "It is working";
+        JSONArray jsonArray = new JSONArray(ids);
+        String title = "New Friend Request";
+        String body = "This is the body of the Notification";
+        String icon = "no String Icons";
+        notification.sendMessage(jsonArray, title, body, icon, msg, "me");
+
     }
 
 }

@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "574802249590",
-    "project_id": "ict2105team052017"
+    "firebase_url": "https://ict2105team052017.firebaseio.com",
+    "project_id": "ict2105team052017",
+    "storage_bucket": "ict2105team052017.appspot.com"
   },
   "client": [
     {
@@ -21,6 +23,10 @@
           }
         },
         {
+          "client_id": "574802249590-p8v98b68q705c0nhvkk7aj50q1ifostu.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
           "client_id": "574802249590-oul14be3bieq2v7v2lv2vr3scmpi46ut.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -35,11 +41,16 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "574802249590-p8v98b68q705c0nhvkk7aj50q1ifostu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }

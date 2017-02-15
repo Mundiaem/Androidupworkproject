@@ -1,75 +1,119 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/feed_bg"
-    android:orientation="vertical">
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
+    card_view:cardCornerRadius="2dp"
+    card_view:cardUseCompatPadding="true">
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginLeft="@dimen/feed_item_margin"
-        android:layout_marginRight="@dimen/feed_item_margin"
-        android:layout_marginTop="@dimen/feed_item_margin"
-        android:background="@drawable/bg_parent_rounded_corner"
-        android:orientation="vertical"
-        android:paddingBottom="@dimen/feed_item_padding_top_bottom"
-        android:paddingTop="@dimen/feed_item_padding_top_bottom">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingLeft="@dimen/feed_item_padding_left_right"
-            android:paddingRight="@dimen/feed_item_padding_left_right">
-
-            <ImageView
-                android:id="@+id/profilePic"
-                android:layout_width="@dimen/feed_item_profile_pic"
-                android:layout_height="@dimen/feed_item_profile_pic"
-                android:scaleType="fitCenter" />
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingLeft="@dimen/feed_item_profile_info_padd">
-
-                <TextView
-                    android:id="@+id/name"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/feed_item_profile_name"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/timestamp"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/timestamp"
-                    android:textSize="@dimen/feed_item_timestamp" />
-            </LinearLayout>
-        </LinearLayout>
+        <com.facebook.login.widget.ProfilePictureView
+            android:id="@+id/profilePic"
+            android:layout_width="@dimen/feed_item_profile_pic"
+            android:layout_height="@dimen/feed_item_profile_pic"
+            android:layout_marginBottom="@dimen/size_word"
+            android:layout_marginTop="1dp" />
 
         <TextView
-            android:id="@+id/txtStatusMsg"
+            android:id="@+id/friend_name"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="5dp"
-            android:paddingLeft="@dimen/feed_item_status_pad_left_right"
-            android:paddingRight="@dimen/feed_item_status_pad_left_right"
-            android:paddingTop="@dimen/feed_item_status_pad_top" />
+            android:layout_alignLeft="@+id/profilePic"
+            android:layout_marginLeft="80dp"
+            android:text="Name"
+            android:textSize="@dimen/feed_item_profile_name"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/txtUrl"
+            android:id="@+id/isFromFacebook"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:linksClickable="true"
+            android:layout_below="@+id/friend_name"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="@dimen/bpv_space"
+            android:text="FriendsFrmFb"
+            android:textColor="@color/timestamp"
+            android:textSize="@dimen/feed_item_timestamp" />
+
+        <TextView
+            android:id="@+id/friendship_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="friendship_status"
+            android:textAlignment="textEnd" />
+
+        <TextView
+            android:id="@+id/sentFriendRequest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/friendship_status"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_weight="0.5"
             android:paddingBottom="10dp"
             android:paddingLeft="@dimen/feed_item_status_pad_left_right"
             android:paddingRight="@dimen/feed_item_status_pad_left_right"
-            android:textColorLink="@color/link" />
+            android:paddingTop="10dp"
+            android:textColor="@android:color/holo_green_dark" />
+
+        <LinearLayout
+            android:id="@+id/actionButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/profilePic"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/txtUrl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:background="@drawable/bg_btn_add_it"
+                android:gravity="end"
+                android:paddingBottom="10dp"
+                android:paddingLeft="@dimen/feed_item_status_pad_left_right"
+                android:paddingRight="@dimen/feed_item_status_pad_left_right"
+                android:paddingTop="10dp"
+                android:text="Send Request"
+                android:textColor="@android:color/holo_green_dark" />
+
+            <TextView
+                android:id="@+id/acceptRequest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:background="@drawable/bg_btn_add_it"
+                android:paddingBottom="10dp"
+                android:paddingLeft="@dimen/feed_item_status_pad_left_right"
+                android:paddingRight="@dimen/feed_item_status_pad_left_right"
+                android:paddingTop="10dp"
+                android:textColor="@android:color/holo_green_dark" />
+
+            <TextView
+                android:id="@+id/rejectRequest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:background="@drawable/bg_btn_add_it"
+                android:paddingBottom="10dp"
+                android:paddingLeft="@dimen/feed_item_status_pad_left_right"
+                android:paddingRight="@dimen/feed_item_status_pad_left_right"
+                android:paddingTop="10dp"
+                android:textColor="@android:color/holo_green_dark" />
 
 
-    </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
 
-</LinearLayout>
+
+</android.support.v7.widget.CardView>

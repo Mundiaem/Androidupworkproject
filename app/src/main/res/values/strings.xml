@@ -13,6 +13,13 @@
     <string name="openDrawer">open_drawer</string>
     <string name="closeDrawer">close_drawer</string>
 
+    <!--String notifications-->
+    <string name="ic_notifications">&#xe0f8;</string>
+    <string name="ic_notifications_none">&#xe0f9;</string>
+    <string name="ic_notifications_off">&#xe0fa;</string>
+    <string name="ic_notifications_on">&#xe0fb;</string>
+    <string name="ic_notifications_paused">&#xe0fc;</string>
+
     <!-- Navigation Drawer menu labels -->
     <string name="nav_home">Home</string>
     <string name="nav_photos">Photos</string>
@@ -41,6 +48,9 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="login_with_facebook">Login with Facebook</string>
     <string name="action_settings">Setting</string>
-    <string name="action_facebookFriends">Facebook Friends</string>
-    <string name="Friends">Friends</string>
+    <string name="action_facebookFriends">Friends</string>
+    <string name="Friends">Current Friends</string>
+    <string name="notif_message_accpting">You have a new Friend!</string>
+    <string name="notif_message_declining">You have new message</string>
+    <string name="notif_message_sending">You have a new friend request</string>
 </resources>

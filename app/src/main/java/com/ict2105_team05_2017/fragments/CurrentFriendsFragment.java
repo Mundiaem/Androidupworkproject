@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ict2105_team05_2017.R;
+import com.ict2105_team05_2017.model.User;
+
+import java.util.List;
 
 /**
  * Created by Macharia on 2/12/2017.
