@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +18,7 @@ import com.facebook.GraphRequest;
 import com.facebook.HttpMethod;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -24,6 +27,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.ict2105_team05_2017.R;
 import com.ict2105_team05_2017.adapters.FaceBookFreindsAdapter;
+import com.ict2105_team05_2017.adapters.UsersTouchAdapter;
+import com.ict2105_team05_2017.model.Dismissed;
 import com.ict2105_team05_2017.model.Friends;
 import com.ict2105_team05_2017.model.User;
 
@@ -62,6 +67,33 @@ public class FacebookFriendsFragment extends Fragment {
             return ids;
         }
         return null;
+    }
+
+    private void updateChanges(DatabaseReference mFirebaseDatabase, FirebaseAuth auth, User user) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        mFirebaseDatabase.child("users_data").child(currentUser.getUid()).child("dismissed").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot dismissed : dataSnapshot.getChildren()) {
+                    String id = (String) dismissed.child("id").getValue();
+
+                    if (id.equalsIgnoreCase(user.getId())) {
+
+                    } else {
+                        userList.add(user);
+
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
     @Override
@@ -105,7 +137,9 @@ public class FacebookFriendsFragment extends Fragment {
         mFirebaseDatabase = mFirebaseInstance.getReference("usersCollection");
         // Storing the app title to the node
         mFirebaseInstance.getReference("app_title").setValue("ict2105team052017");
-        linkingIds(mFirebaseInstance, mFirebaseDatabase);
+
+        linkingIds( mFirebaseDatabase);
+
     }
 
     @Override
@@ -114,73 +148,115 @@ public class FacebookFriendsFragment extends Fragment {
     }
 
 
-    private void linkingIds(FirebaseDatabase mFirebaseInstance, DatabaseReference mFirebaseDatabase) {
+    private void linkingIds( DatabaseReference mFirebaseDatabase) {
         Query myUsersQuery = mFirebaseDatabase.child("users_data");
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         final String currentUserId = firebaseUser.getUid();
+
         // User data change listener
         // My top posts by number of stars
+
+        myUsersQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                String key = dataSnapshot.getKey();
+
+                final User user = dataSnapshot.getValue(User.class);
+                String name = user.getName();
+                String id = user.getId();
+
+                List<Friends> userFriends = user.getFriendsList();
+
+                if (!Objects.equals(currentUserId, id)) {
+                    Log.e(TAG, "This is the USer Id!! Current User " + id + name);
+
+
+                    ///Getting friends From FaceBook
+                    new GraphRequest(
+                            AccessToken.getCurrentAccessToken(),
+                            "/me/friends",
+                            null,
+                            HttpMethod.GET,
+                            response -> {
+                                JSONObject responseJSON = response.getJSONObject();
+                                if (responseJSON != null) {
+                                    Log.e(TAG, responseJSON.toString());
+
+                                    //Querying the USer
+                                    String fbId = user.getFacebookId();
+                                    Log.e(TAG, "This is the Id From FB " + fbId);
+                                    String userFBId = extractIdsForJSONIDs(responseJSON);
+
+                                    if (Objects.equals(fbId, userFBId)) {
+                                        Log.e(TAG, "This is the Id From FB !! is True " + userFBId + " " + fbId);
+                                        Friends friend = new Friends();
+                                        friend.setAfriendFromFb(true);
+                                        user.setFriends(friend);
+
+                                    } else {
+                                        Log.e(TAG, "This is the Id From FB !! is False" + userFBId + " " + fbId);
+                                        Friends friend = new Friends();
+                                        friend.setAfriendFromFb(false);
+                                        user.setFriends(friend);
+
+                                    }
+                                    userList.add(user);
+
+                                    faceBookFreindsAdapter = new FaceBookFreindsAdapter(getContext(), userList, FacebookFriendsFragment.this.mFirebaseInstance, FacebookFriendsFragment.this.mFirebaseDatabase, mAuth);
+
+                                    mRecylerView.setAdapter(faceBookFreindsAdapter);
+                                    faceBookFreindsAdapter.notifyDataSetChanged();
+
+                                    // Setup ItemTouchHelper
+                                    ItemTouchHelper.Callback callback = new UsersTouchAdapter(faceBookFreindsAdapter);
+                                    ItemTouchHelper helper = new ItemTouchHelper(callback);
+                                    helper.attachToRecyclerView(mRecylerView);
+
+
+                                } else {
+                                    Log.e(TAG, "Object is null");
+
+                                }
+        /* handle the result */
+                            }
+                    ).executeAsync();
+
+                } else {
+                    Log.e(TAG, "This is the USer Id!! " + id + name);
+
+                }
+
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
+                String commentKey = dataSnapshot.getKey();
+
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         myUsersQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (final DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     // TODO: handle the post
-                    String key = postSnapshot.getKey();
-
-                    final User user = postSnapshot.getValue(User.class);
-                    String name = user.getName();
-                    String id = user.getId();
-                    if (!Objects.equals(currentUserId, id)) {
-                        Log.e(TAG, "This is the USer Id!! Current User " + id + name);
-
-
-                        ///Getting friends From FaceBook
-                        new GraphRequest(
-                                AccessToken.getCurrentAccessToken(),
-                                "/me/friends",
-                                null,
-                                HttpMethod.GET,
-                                response -> {
-                                    JSONObject responseJSON = response.getJSONObject();
-                                    if (responseJSON != null) {
-                                        Log.e(TAG, responseJSON.toString());
-
-                                        //Querying the USer
-                                        String fbId = user.getFacebookId();
-                                        Log.e(TAG, "This is the Id From FB " + fbId);
-                                        String userFBId = extractIdsForJSONIDs(responseJSON);
-
-                                        if (Objects.equals(fbId, userFBId)) {
-                                            Log.e(TAG, "This is the Id From FB !! is True " + userFBId + " " + fbId);
-                                            Friends friend = new Friends();
-                                            friend.setAfriendFromFb(true);
-                                            user.setFriends(friend);
-
-                                        } else {
-                                            Log.e(TAG, "This is the Id From FB !! is False" + userFBId + " " + fbId);
-                                            Friends friend = new Friends();
-                                            friend.setAfriendFromFb(false);
-                                            user.setFriends(friend);
-
-                                        }
-                                        userList.add(user);
-                                        faceBookFreindsAdapter = new FaceBookFreindsAdapter(getContext(), userList, FacebookFriendsFragment.this.mFirebaseInstance, FacebookFriendsFragment.this.mFirebaseDatabase);
-                                        mRecylerView.setAdapter(faceBookFreindsAdapter);
-                                        faceBookFreindsAdapter.notifyDataSetChanged();
-
-
-                                    } else {
-                                        Log.e(TAG, "Object is null");
-
-                                    }
-        /* handle the result */
-                                }
-                        ).executeAsync();
-
-                    } else {
-                        Log.e(TAG, "This is the USer Id!! " + id + name);
-
-                    }
 
 
                 }

@@ -2,6 +2,7 @@ package com.ict2105_team05_2017.services;
 
 
 import android.app.Notification;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.util.Log;
 
@@ -26,36 +27,47 @@ public class NotificationService extends FirebaseMessagingService {
         * If the application is in the foreground the data is handled from here
         * */
         Log.e(TAG, " This is the message: " + remoteMessage.getData());
-        String msg = remoteMessage.getNotification().getBody();
-        Log.e(TAG, " This is the Notification: " + msg);
+
+
         Log.e(TAG, " This is the Data: " + remoteMessage.getData());
         Map<String, String> data = remoteMessage.getData();
+
         String title = data.get("title");
-        Log.e(TAG," This is the title "+title);
-        String message= data.get("message");
-        Log.e(TAG, "This is message "+message );
+
+        Log.e(TAG, " This is the title " + title);
+        String message = data.get("message");
+
+        Log.e(TAG, "This is message " + message);
+        String bodyMsg= data.get("body");
+        Log.e(TAG, "This is Body Message " + bodyMsg);
 
 
 
-        fireNotification(msg, title);
+        Notification.Builder builder = new Notification.Builder(this);
+        Uri sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        builder.setSound(sound);
+        fireNotification(bodyMsg, title);
 
     }
 
     private void fireNotification(String msg, String title) {
+if (msg!= null&&title!=null){
+            PugNotification.with(this)
+                    .load()
+                    .title(title)
+                    .message(msg)
 
-        PugNotification.with(this)
-                .load()
-                .title(title)
-                .message(msg)
+                    .bigTextStyle("You have a new Message")
+                    .smallIcon(R.drawable.ic_drop)
+                    .largeIcon(R.drawable.ic_drop)
+                    .sound(Uri.EMPTY)
+                    .flags(Notification.DEFAULT_ALL)
+                    .autoCancel(true)
+                    .click(MainActivity.class)
+                    .simple()
+                    .build();
+        }
 
-                .bigTextStyle("You have a new Message")
-                .smallIcon(R.drawable.ic_drop)
-                .largeIcon(R.drawable.ic_drop)
-                .sound(Uri.EMPTY)
-                .flags(Notification.DEFAULT_ALL)
-                .autoCancel(true)
-                .click(MainActivity.class)
-                .simple()
-                .build();
+
     }
 }

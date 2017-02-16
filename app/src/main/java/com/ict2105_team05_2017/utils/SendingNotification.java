@@ -40,15 +40,15 @@ public class SendingNotification {
             protected String doInBackground(String... params) {
                 try {
                     JSONObject root = new JSONObject();
-                    JSONObject notification = new JSONObject();
-                    notification.put("body", body);
-
 
                     JSONObject data = new JSONObject();
+
                     data.put("message", message);
                     data.put("title", title);
-                    data.put("icon",icon);
-                    root.put("notification", notification);
+                    data.put("icon", icon);
+
+                    data.put("body", body);
+
                     root.put("data", data);
                     root.put("registration_ids", recipients);
 
@@ -63,16 +63,22 @@ public class SendingNotification {
 
             @Override
             protected void onPostExecute(String result) {
-                try {
-                    JSONObject resultJson = new JSONObject(result);
-                    int success, failure;
-                    success = resultJson.getInt("success");
-                    failure = resultJson.getInt("failure");
-                    Toast.makeText(mContext, "Successfully sent friend request to " + name, Toast.LENGTH_LONG).show();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Toast.makeText(mContext, "Message Failed, Unknown error occurred.", Toast.LENGTH_LONG).show();
+
+                if (result != null) {
+                    try {
+
+                        JSONObject resultJson = new JSONObject(result);
+                        int success, failure;
+                        success = resultJson.getInt("success");
+                        failure = resultJson.getInt("failure");
+                        Toast.makeText(mContext, "Message Success: " + success + "Message Failed: " + failure, Toast.LENGTH_LONG).show();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(mContext, "Message Failed, Unknown error occurred.", Toast.LENGTH_LONG).show();
+                    }
                 }
+
+
             }
         }.execute();
     }

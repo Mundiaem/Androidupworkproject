@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -42,9 +43,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.ict2105_team05_2017.R;
 import com.ict2105_team05_2017.model.User;
 import com.ict2105_team05_2017.utils.FirebaseUserData;
+import com.ict2105_team05_2017.utils.SendingNotification;
+
+import org.json.JSONArray;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -124,6 +129,14 @@ public class LoginActivity extends AppCompatActivity implements
 
     }
 
+    //SendingNotification
+    private void sendNotifications(String token, String msg, String title, String body, String icon, String name) {
+        SendingNotification notification = new SendingNotification(this);
+        List<String> ids = new ArrayList<>();
+        ids.add(token);
+        JSONArray jsonArray = new JSONArray(ids);
+        notification.sendMessage(jsonArray, title, body, icon, msg, name);
+    }
     private void facebook_login(final Context context, final FirebaseDatabase mFirebaseInstance, final DatabaseReference mFirebaseDatabase) {
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "user_friends", "user_about_me"
                 , "public_profile", "user_likes", "user_birthday", "user_location"));
@@ -177,6 +190,7 @@ public class LoginActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
+
         mAuth.addAuthStateListener(mAuthListener);
     }
 
@@ -204,10 +218,6 @@ public class LoginActivity extends AppCompatActivity implements
         }
     }
 
-    // checking if the User is LoggedIn
-    private void userExixt() {
-
-    }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -216,7 +226,13 @@ public class LoginActivity extends AppCompatActivity implements
     }
 
     private void onLogin(String email, String password, ProgressDialog progressDialog) {
-
+        String name = "This";
+        String body = getApplicationContext().getString(R.string.notif_message_declining) + "\"" + "Testing" + " has declined your Friend Request" + "\"";
+        String msg = "Friendship declined";
+        String token = "ciVWpbElbGY:APA91bGvPdMgfqK_q3wKIDpqsN_fGRvoVprkagpfhQcqz1p9C-nTP8nTr4W6EYppE9JfJ9xM3az92ao1liLDciRzuHPCsv3WYEfFL-fibhPV89yCol36jdce2hf_iqYGgzxpxke7paom";
+        String title = "New Message";
+        String icon = "no String Icons";
+        sendNotifications(token, msg, title, body, icon, name);
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
@@ -240,9 +256,9 @@ public class LoginActivity extends AppCompatActivity implements
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
 
-        final ProgressDialog progressdialog = new ProgressDialog(LoginActivity.this);
+       /* final ProgressDialog progressdialog = new ProgressDialog(LoginActivity.this);
         progressdialog.setMessage("Please Wait....");
-        progressdialog.show();
+        progressdialog.show();*/
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
@@ -256,10 +272,20 @@ public class LoginActivity extends AppCompatActivity implements
                     } else {
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
                         Toast.makeText(LoginActivity.this, "Successfully Logged In", Toast.LENGTH_SHORT).show();
+                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                        String id= firebaseUser.getUid();
+                        String name= firebaseUser.getDisplayName();
+                        String email= firebaseUser.getEmail();
+                        Uri uri=acct.getPhotoUrl();
+                        String photoUri=uri.toString();
+                        User user =new User(id, name, email, photoUri);
+                        mFirebaseUserData = new FirebaseUserData(this, mFirebaseInstance, mFirebaseDatabase, user);
+
+                        mFirebaseUserData.CreateUser();
                         onLoginSuccess();
                     }
 
-                    progressdialog.hide();
+
                 });
     }
 
@@ -296,6 +322,7 @@ public class LoginActivity extends AppCompatActivity implements
             String email = firebaseUser.getEmail();
             String facebookID = token.getUserId();
             String id = firebaseUser.getUid();
+
             List providerData = firebaseUser.getProviderData();
             Log.e(TAG, " name: " + name + " Email: " + email + " providerId: " + facebookID + " firebaseUserId: " + id + " ProviderData: " + providerData);
 

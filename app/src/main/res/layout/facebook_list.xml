@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="5dp"
+    android:id="@+id/friend_list"
     card_view:cardCornerRadius="2dp"
     card_view:cardUseCompatPadding="true">
 
@@ -23,7 +24,6 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/profilePic"
             android:layout_marginLeft="80dp"
-            android:text="Name"
             android:textSize="@dimen/feed_item_profile_name"
             android:textStyle="bold" />
 
@@ -34,7 +34,6 @@
             android:layout_below="@+id/friend_name"
             android:layout_marginLeft="80dp"
             android:layout_marginTop="@dimen/bpv_space"
-            android:text="FriendsFrmFb"
             android:textColor="@color/timestamp"
             android:textSize="@dimen/feed_item_timestamp" />
 
@@ -43,7 +42,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:text="friendship_status"
             android:textAlignment="textEnd" />
 
         <TextView
@@ -84,7 +82,6 @@
                 android:paddingLeft="@dimen/feed_item_status_pad_left_right"
                 android:paddingRight="@dimen/feed_item_status_pad_left_right"
                 android:paddingTop="10dp"
-                android:text="Send Request"
                 android:textColor="@android:color/holo_green_dark" />
 
             <TextView
@@ -113,6 +110,19 @@
 
 
         </LinearLayout>
+        <TextView
+            android:id="@+id/dismiss"
+            android:layout_below="@+id/actionButtons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="dismiss"
+            android:padding="8dp"
+            android:visibility="gone"
+            android:background="@drawable/bg_btn_add_it"
+            android:layout_marginBottom="16dp"
+            />
+
     </RelativeLayout>
 
 

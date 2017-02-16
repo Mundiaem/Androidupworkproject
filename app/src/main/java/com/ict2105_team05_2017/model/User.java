@@ -19,6 +19,8 @@ public class User {
     private Friends friends;
     private UserInfo[] providerData;
     private String token;
+    private List<Dismissed> dismissedList;
+    private String photoUri;
 
 
     public User() {
@@ -88,12 +90,32 @@ public class User {
         return providerData;
     }
 
+    public void setProviderData(UserInfo[] providerData) {
+        this.providerData = providerData;
+    }
+
     public String getToken() {
         return token;
     }
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public List<Dismissed> getDismissedList() {
+        return dismissedList;
+    }
+
+    public void setDismissedList(List<Dismissed> dismissedList) {
+        this.dismissedList = dismissedList;
+    }
+
+    public String getPhotoUri() {
+        return photoUri;
+    }
+
+    public void setPhotoUri(String photoUri) {
+        this.photoUri = photoUri;
     }
 
     @Override
