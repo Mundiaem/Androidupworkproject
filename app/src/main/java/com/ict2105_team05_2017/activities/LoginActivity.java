@@ -129,14 +129,7 @@ public class LoginActivity extends AppCompatActivity implements
 
     }
 
-    //SendingNotification
-    private void sendNotifications(String token, String msg, String title, String body, String icon, String name) {
-        SendingNotification notification = new SendingNotification(this);
-        List<String> ids = new ArrayList<>();
-        ids.add(token);
-        JSONArray jsonArray = new JSONArray(ids);
-        notification.sendMessage(jsonArray, title, body, icon, msg, name);
-    }
+
     private void facebook_login(final Context context, final FirebaseDatabase mFirebaseInstance, final DatabaseReference mFirebaseDatabase) {
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email", "user_friends", "user_about_me"
                 , "public_profile", "user_likes", "user_birthday", "user_location"));
@@ -226,13 +219,7 @@ public class LoginActivity extends AppCompatActivity implements
     }
 
     private void onLogin(String email, String password, ProgressDialog progressDialog) {
-        String name = "This";
-        String body = getApplicationContext().getString(R.string.notif_message_declining) + "\"" + "Testing" + " has declined your Friend Request" + "\"";
-        String msg = "Friendship declined";
-        String token = "ciVWpbElbGY:APA91bGvPdMgfqK_q3wKIDpqsN_fGRvoVprkagpfhQcqz1p9C-nTP8nTr4W6EYppE9JfJ9xM3az92ao1liLDciRzuHPCsv3WYEfFL-fibhPV89yCol36jdce2hf_iqYGgzxpxke7paom";
-        String title = "New Message";
-        String icon = "no String Icons";
-        sendNotifications(token, msg, title, body, icon, name);
+
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
