@@ -8,9 +8,9 @@ import android.support.v7.widget.helper.ItemTouchHelper;
  */
 
 public class UsersTouchAdapter extends ItemTouchHelper.SimpleCallback{
-    private FaceBookFreindsAdapter mFriendsAdapter;
+    private FaceBookFriendsAdapter mFriendsAdapter;
 
-    public UsersTouchAdapter(FaceBookFreindsAdapter mFriendsAdapter){
+    public UsersTouchAdapter(FaceBookFriendsAdapter mFriendsAdapter){
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mFriendsAdapter = mFriendsAdapter;
     }

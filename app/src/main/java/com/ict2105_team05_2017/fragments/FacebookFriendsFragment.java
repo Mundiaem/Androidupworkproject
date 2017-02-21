@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,81 +23,90 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.ict2105_team05_2017.R;
-import com.ict2105_team05_2017.adapters.FaceBookFreindsAdapter;
+import com.ict2105_team05_2017.adapters.FaceBookFriendsAdapter;
 import com.ict2105_team05_2017.adapters.UsersTouchAdapter;
-import com.ict2105_team05_2017.model.Dismissed;
+import com.ict2105_team05_2017.callbacks.OnLoadUsers;
+import com.ict2105_team05_2017.callbacks.OnuserFinishedLoading;
 import com.ict2105_team05_2017.model.Friends;
 import com.ict2105_team05_2017.model.User;
+import com.ict2105_team05_2017.utils.ExtractIdsForJSONIDs;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
  * Created by Macharia on 2/12/2017.
  */
 
-public class FacebookFriendsFragment extends Fragment {
+public class FacebookFriendsFragment extends Fragment implements OnLoadUsers, OnuserFinishedLoading {
     private static final String TAG = FacebookFriendsFragment.class.getName();
-    private FaceBookFreindsAdapter faceBookFreindsAdapter;
+    private static final String STATE_USERS = "state_users";
+    private FaceBookFriendsAdapter faceBookFriendsAdapter;
     /*private List<Friends> friendsList = new ArrayList<>();*/
-    private List<User> userList = new ArrayList<>();
+    private ArrayList<User> userList = new ArrayList<>();
     private RecyclerView mRecylerView;
     private FirebaseAuth mAuth;
-
-
     private DatabaseReference mFirebaseDatabase;
     private FirebaseDatabase mFirebaseInstance;
+    private OnuserFinishedLoading onuserFinishedLoading;
+    private OnLoadUsers loadUsers;
 
 
-    private static String extractIdsForJSONIDs(JSONObject responseJson) {
-        String ids = null;
-        JSONArray data = responseJson.optJSONArray("data");
-        if (data != null) {
-            for (int i = 0; i < data.length(); i++) {
-                ids = data.optJSONObject(i).optString("id");
-                Log.e(TAG, "This is the fb Id!! " + ids);
-            }
-            return ids;
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fetchfriendsfragment, container, false);
+        return v;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mRecylerView = (RecyclerView) view.findViewById(R.id.facebookFriends_RecyclerView);
+        mRecylerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mAuth = FirebaseAuth.getInstance();
+
+            /*Getting reference to the node*/
+        mFirebaseInstance = FirebaseDatabase.getInstance();
+
+        // get reference to 'users' node
+        mFirebaseDatabase = mFirebaseInstance.getReference("usersCollection");
+        // Storing the app title to the node
+        mFirebaseInstance.getReference("app_title").setValue("ict2105team052017");
+        //Initializing the FaceBookFriendsAdapter and RecyclerView
+        faceBookFriendsAdapter = new FaceBookFriendsAdapter(getContext(), userList, mFirebaseInstance, mFirebaseDatabase, mAuth);
+        mRecylerView.setAdapter(faceBookFriendsAdapter);
+
+        //Checking if Parcelable is empty
+        if (savedInstanceState != null) {
+            userList = savedInstanceState.getParcelableArrayList(STATE_USERS);
+            faceBookFriendsAdapter.updateFriends(userList);
+
+        } else {
+            linkingIds(mFirebaseDatabase);
+            faceBookFriendsAdapter.updateFriends(userList);
+
+            Log.e(TAG, "This should load Now!");
         }
-        return null;
-    }
-
-    private void updateChanges(DatabaseReference mFirebaseDatabase, FirebaseAuth auth, User user) {
-        FirebaseUser currentUser = auth.getCurrentUser();
-        mFirebaseDatabase.child("users_data").child(currentUser.getUid()).child("dismissed").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot dismissed : dataSnapshot.getChildren()) {
-                    String id = (String) dismissed.child("id").getValue();
-
-                    if (id.equalsIgnoreCase(user.getId())) {
-
-                    } else {
-                        userList.add(user);
 
 
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
+        // Setup ItemTouchHelper
+        ItemTouchHelper.Callback callback = new UsersTouchAdapter(faceBookFriendsAdapter);
+        ItemTouchHelper helper = new ItemTouchHelper(callback);
+        helper.attachToRecyclerView(mRecylerView);
 
     }
+
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        //save the users list to a parcelable prior to the rotation or configuration change
+        outState.putParcelableArrayList(STATE_USERS, userList);
+
     }
 
     @Override
@@ -116,39 +124,13 @@ public class FacebookFriendsFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fetchfriendsfragment, container, false);
-        return v;
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mRecylerView = (RecyclerView) view.findViewById(R.id.facebookFriends_RecyclerView);
-        mRecylerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mAuth = FirebaseAuth.getInstance();
-
-        /*Getting reference to the node*/
-        mFirebaseInstance = FirebaseDatabase.getInstance();
-
-        // get reference to 'users' node
-        mFirebaseDatabase = mFirebaseInstance.getReference("usersCollection");
-        // Storing the app title to the node
-        mFirebaseInstance.getReference("app_title").setValue("ict2105team052017");
-
-        linkingIds( mFirebaseDatabase);
-
-    }
-
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
 
 
-    private void linkingIds( DatabaseReference mFirebaseDatabase) {
+    private void linkingIds(DatabaseReference mFirebaseDatabase) {
         Query myUsersQuery = mFirebaseDatabase.child("users_data");
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         final String currentUserId = firebaseUser.getUid();
@@ -165,9 +147,8 @@ public class FacebookFriendsFragment extends Fragment {
                 String name = user.getName();
                 String id = user.getId();
 
-                List<Friends> userFriends = user.getFriendsList();
 
-                if (!Objects.equals(currentUserId, id)) {
+                if (!Objects.equals(currentUserId, id) && user.getId() != null && !user.getId().isEmpty() && user.getName() != null && !user.getName().isEmpty()) {
                     Log.e(TAG, "This is the USer Id!! Current User " + id + name);
 
 
@@ -185,7 +166,7 @@ public class FacebookFriendsFragment extends Fragment {
                                     //Querying the USer
                                     String fbId = user.getFacebookId();
                                     Log.e(TAG, "This is the Id From FB " + fbId);
-                                    String userFBId = extractIdsForJSONIDs(responseJSON);
+                                    String userFBId = ExtractIdsForJSONIDs.extractIdsForFaceBook(responseJSON);
 
                                     if (Objects.equals(fbId, userFBId)) {
                                         Log.e(TAG, "This is the Id From FB !! is True " + userFBId + " " + fbId);
@@ -202,15 +183,8 @@ public class FacebookFriendsFragment extends Fragment {
                                     }
                                     userList.add(user);
 
-                                    faceBookFreindsAdapter = new FaceBookFreindsAdapter(getContext(), userList, FacebookFriendsFragment.this.mFirebaseInstance, FacebookFriendsFragment.this.mFirebaseDatabase, mAuth);
 
-                                    mRecylerView.setAdapter(faceBookFreindsAdapter);
-                                    faceBookFreindsAdapter.notifyDataSetChanged();
-
-                                    // Setup ItemTouchHelper
-                                    ItemTouchHelper.Callback callback = new UsersTouchAdapter(faceBookFreindsAdapter);
-                                    ItemTouchHelper helper = new ItemTouchHelper(callback);
-                                    helper.attachToRecyclerView(mRecylerView);
+                                    faceBookFriendsAdapter.updateFriends(userList);
 
 
                                 } else {
@@ -252,24 +226,20 @@ public class FacebookFriendsFragment extends Fragment {
 
             }
         });
-        myUsersQuery.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (final DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    // TODO: handle the post
-
-
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
-                // ...
-            }
-        });
     }
 
 
+    @Override
+    public void onGetUsers(ArrayList<User> userList) {
+        Log.e(TAG, "The callback is called " + userList);
+        faceBookFriendsAdapter.updateFriends(userList);
+        faceBookFriendsAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void userFinishedLoading(ArrayList<User> userArrayList) {
+        Log.e(TAG, "The userFinishedLoading callback is called " + userArrayList);
+        faceBookFriendsAdapter.updateFriends(userList);
+        faceBookFriendsAdapter.notifyDataSetChanged();
+    }
 }

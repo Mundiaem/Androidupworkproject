@@ -1,25 +1,29 @@
 package com.ict2105_team05_2017.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.auth.UserInfo;
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+
 
 /**
  * Created by Macharia on 2/12/2017.
  */
 @IgnoreExtraProperties
-public class User {
+public class User implements Parcelable {
     private String id;
     private String name;
     private String email;
     private String facebookId;
-    private List<Friends> friendsList;
+    private ArrayList<Friends> friendsList;
     private Friends friends;
     private UserInfo[] providerData;
     private String token;
-    private List<Dismissed> dismissedList;
+    private ArrayList<Dismissed> dismissedList;
     private String photoUri;
 
 
@@ -37,6 +41,27 @@ public class User {
     public User(Friends friends) {
         this.friends = friends;
     }
+
+    protected User(Parcel in) {
+        id = in.readString();
+        name = in.readString();
+        email = in.readString();
+        facebookId = in.readString();
+        token = in.readString();
+        photoUri = in.readString();
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 
     public Friends getFriends() {
         return friends;
@@ -78,11 +103,11 @@ public class User {
         this.facebookId = facebookId;
     }
 
-    public List<Friends> getFriendsList() {
+    public ArrayList<Friends> getFriendsList() {
         return friendsList;
     }
 
-    public void setFriendsList(List<Friends> friendsList) {
+    public void setFriendsList(ArrayList<Friends> friendsList) {
         this.friendsList = friendsList;
     }
 
@@ -102,11 +127,11 @@ public class User {
         this.token = token;
     }
 
-    public List<Dismissed> getDismissedList() {
+    public ArrayList<Dismissed> getDismissedList() {
         return dismissedList;
     }
 
-    public void setDismissedList(List<Dismissed> dismissedList) {
+    public void setDismissedList(ArrayList<Dismissed> dismissedList) {
         this.dismissedList = dismissedList;
     }
 
@@ -130,4 +155,22 @@ public class User {
                 ", providerData=" + Arrays.toString(providerData) +
                 '}';
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(id);
+        parcel.writeString(name);
+        parcel.writeString(email);
+        parcel.writeString(facebookId);
+        parcel.writeString(token);
+        parcel.writeString(photoUri);
+        parcel.writeList(friendsList);
+        parcel.writeList(dismissedList);
+    }
+
 }

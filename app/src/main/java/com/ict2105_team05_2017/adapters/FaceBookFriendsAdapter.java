@@ -30,50 +30,57 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by Macharia on 2/12/2017.
  */
 
-public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreindsAdapter.ViewHolder> {
-    private static final String TAG = FaceBookFreindsAdapter.class.getName();
+public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriendsAdapter.ViewHolder> {
+    private static final String TAG = FaceBookFriendsAdapter.class.getName();
     private Context mContext;
 
     private FirebaseDatabase mfirebaseInstance;
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
-    private List<User> friendsList = new ArrayList<>();
+    private ArrayList<User> friendsList = new ArrayList<>();
 
 
-    public FaceBookFreindsAdapter(Context context, List<User> mUsersList, FirebaseDatabase mfirebaseInstance, DatabaseReference mDatabase, FirebaseAuth mAuth) {
+    public FaceBookFriendsAdapter(Context context, ArrayList<User> userList, FirebaseDatabase mfirebaseInstance, DatabaseReference mDatabase, FirebaseAuth mAuth) {
         this.mContext = context;
-        updateFriends(mUsersList);
         this.mfirebaseInstance = mfirebaseInstance;
         this.mDatabase = mDatabase;
         this.mAuth = mAuth;
+        updateFriends(userList);
 
     }
 
-    public void updateFriends(List<User> mFriendsList) {
+    public void updateFriends(ArrayList<User> mFriendsList) {
         this.friendsList = mFriendsList;
         notifyDataSetChanged();
     }
 
     @Override
-    public FaceBookFreindsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public FaceBookFriendsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(mContext).inflate(R.layout.facebook_list, parent, false);
 
         return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(final FaceBookFreindsAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(final FaceBookFriendsAdapter.ViewHolder holder, int position) {
+
+
+        Set<User> usersWithoutDuplicate= new LinkedHashSet<>(friendsList);
+        friendsList.clear();
+        friendsList.addAll(usersWithoutDuplicate);
         final User mUser = friendsList.get(position);
-
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
 
 
         Log.e(TAG, mUser.getName() + " " + mUser.getId());
@@ -82,12 +89,15 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
             holder.profilePick.setProfileId(mUser.getFacebookId());
         }
 
-        if (mUser.getFriends().getAfriendFromFb()) {
-            holder.isFromFacebook.setText("Facebook Friend");
+            if (mUser.getFriends().getAfriendFromFb()) {
+                holder.isFromFacebook.setText("Facebook Friend");
 
-        } else {
-            holder.isFromFacebook.setVisibility(View.GONE);
+            } else {
+                holder.isFromFacebook.setVisibility(View.GONE);
+
         }
+
+
         holder.sendRequest.setText("Send Request");
         holder.acceptRequest.setVisibility(View.GONE);
         holder.rejectRequest.setVisibility(View.GONE);
@@ -105,7 +115,7 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
         //Sending, Accepting and Rejecting Friends Requests
 
 
-        renderingView(mUser, holder, firebaseUser);
+        renderingView(mUser, holder, firebaseUser, position);
         mDatabase.child("users_data").child(firebaseUser.getUid()).child("dismissed").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -122,9 +132,9 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
 
     }
 
-    private void renderingView(final User mUser, final ViewHolder holder, FirebaseUser firebaseUser) {
+    private void renderingView(final User mUser, final ViewHolder holder, FirebaseUser firebaseUser, int position) {
         Query myUsersQuery = mDatabase.child("users_data").child(firebaseUser.getUid()).child("friends");
-        List<Friends> friendsList = mUser.getFriendsList();
+        ArrayList<Friends> friendsList = mUser.getFriendsList();
      /*   for (int i=0; i< friendsList.size(); i++){
             Friends friendUser=  friendsList.get(i);
             boolean declined= friendUser.getFriendshipDeclined();
@@ -137,7 +147,7 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                     // TODO: handle the post
-
+                    final Friends potentialFriends = dataSnapshot.getValue(Friends.class);
                     String id = (String) userSnapshot.child("id").getValue();
 
                     if (Objects.equals(mUser.getId(), id)) {
@@ -146,6 +156,7 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
                         // Checking Wheather they are equals
 
                         boolean acccept = (Boolean) userSnapshot.child("acceptedRequest").getValue();
+
                         boolean decline = (Boolean) userSnapshot.child("friendshipDeclined").getValue();
                         boolean isFreind = (Boolean) userSnapshot.child("friend").getValue();
                         boolean sentFriendRequest = (Boolean) userSnapshot.child("sentFriendRequest").getValue();
@@ -160,6 +171,7 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
                             holder.friendship_status.setText("Friend");
 
 
+
                         } else if (!sentFriendRequest && !acccept && !decline) {
                             // User has Friend Request
                             Log.e(TAG, "User has Friend Request " + name);
@@ -171,7 +183,8 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
                             holder.acceptRequest.setOnClickListener(view -> acceptingFriendRequest(mUser));
 
 
-                        } else if (sentFriendRequest && !acccept && !decline) {
+                        }
+                        if (sentFriendRequest && !acccept && !decline) {
                             //Sent Friend Request
                             Log.e(TAG, "Sent Friend Request " + name);
                             holder.friendship_status.setVisibility(View.GONE);
@@ -179,7 +192,8 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
                             holder.actionButtons.setVisibility(View.GONE);
 
 
-                        } else if (sentFriendRequest && !acccept && decline) {
+                        }
+                        if (sentFriendRequest && !acccept && decline) {
                             //Rejected FriendShip
                             Log.e(TAG, "Rejected FriendShip " + name);
                             holder.actionButtons.setVisibility(View.GONE);
@@ -218,8 +232,9 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
 
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         Friends potentialFriend = new Friends();
-        potentialFriend.setId(firebaseUser.getUid());
         assert firebaseUser != null;
+        potentialFriend.setId(firebaseUser.getUid());
+
         potentialFriend.setName(firebaseUser.getDisplayName());
         potentialFriend.setEmail(firebaseUser.getEmail());
         potentialFriend.setAcceptedRequest(false);
@@ -352,14 +367,15 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
     /*Not interested is for dismissing users whom current user is not interested
     * in their friendship*/
     private void notInterested(User user) {
-        FirebaseUser author = mAuth.getCurrentUser();
-        Dismissed dismissed = new Dismissed();
-        dismissed.setCleared(true);
-        dismissed.setId(user.getId());
-        dismissed.setName(user.getName());
-        mDatabase.child("users_data").child(author.getUid()).child("dismissed").child(user.getId()).setValue(dismissed);
-
-        Log.e(TAG, "Sent Friend Request notInterested " + user.getId());
+        if (user.getId() != null && !user.getId().isEmpty()) {
+            FirebaseUser author = mAuth.getCurrentUser();
+            Dismissed dismissed = new Dismissed();
+            dismissed.setCleared(true);
+            dismissed.setId(user.getId());
+            dismissed.setName(user.getName());
+            mDatabase.child("users_data").child(author.getUid()).child("dismissed").child(user.getId()).setValue(dismissed);
+            Log.e(TAG, "Sent Friend Request notInterested " + user.getId());
+        }
 
 
     }
@@ -367,7 +383,7 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
     //SendingNotification
     private void sendNotifications(String token, String msg, String title, String body, String icon, String name) {
         SendingNotification notification = new SendingNotification(mContext);
-        List<String> ids = new ArrayList<>();
+        ArrayList<String> ids = new ArrayList<>();
         ids.add(token);
         JSONArray jsonArray = new JSONArray(ids);
         notification.sendMessage(jsonArray, title, body, icon, msg, name);
@@ -389,16 +405,16 @@ public class FaceBookFreindsAdapter extends RecyclerView.Adapter<FaceBookFreinds
 
 
     public void remove(int position) {
-        try{
+        try {
             User userToDismiss = friendsList.get(position);
             notInterested(userToDismiss);
-        }catch (IndexOutOfBoundsException e){
+            friendsList.remove(position);
+            notifyItemRemoved(position);
+        } catch (IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
 
-        friendsList.remove(position);
-        notifyItemRemoved(position);
-        notifyDataSetChanged();
+
 
     }
 

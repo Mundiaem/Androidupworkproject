@@ -40,15 +40,18 @@ public class SendingNotification {
             protected String doInBackground(String... params) {
                 try {
                     JSONObject root = new JSONObject();
+                    JSONObject notification = new JSONObject();
+                    notification.put("body", body);
+                    notification.put("title", title);
+                    notification.put("icon", icon);
 
                     JSONObject data = new JSONObject();
-
                     data.put("message", message);
+                    data.put("body", body);
                     data.put("title", title);
                     data.put("icon", icon);
-
-                    data.put("body", body);
-
+                    data.put("name", name);
+                    root.put("notification", notification);
                     root.put("data", data);
                     root.put("registration_ids", recipients);
 
@@ -63,27 +66,21 @@ public class SendingNotification {
 
             @Override
             protected void onPostExecute(String result) {
-
-                if (result != null) {
-                    try {
-
-                        JSONObject resultJson = new JSONObject(result);
-                        int success, failure;
-                        success = resultJson.getInt("success");
-                        failure = resultJson.getInt("failure");
-                        Toast.makeText(mContext, "Message Success: " + success + "Message Failed: " + failure, Toast.LENGTH_LONG).show();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Toast.makeText(mContext, "Message Failed, Unknown error occurred.", Toast.LENGTH_LONG).show();
-                    }
+                try {
+                    JSONObject resultJson = new JSONObject(result);
+                    int success, failure;
+                    success = resultJson.getInt("success");
+                    failure = resultJson.getInt("failure");
+                    Toast.makeText(mContext, "Message Success: " + success + "Message Failed: " + failure, Toast.LENGTH_LONG).show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(mContext, "Message Failed, Unknown error occurred.", Toast.LENGTH_LONG).show();
                 }
-
-
             }
         }.execute();
     }
 
-    String postToFCM(String bodyString) throws IOException {
+    private String postToFCM(String bodyString) throws IOException {
         RequestBody body = RequestBody.create(JSON, bodyString);
         Request request = new Request.Builder()
                 .url(Constants.FCM_MESSAGE_URL)
