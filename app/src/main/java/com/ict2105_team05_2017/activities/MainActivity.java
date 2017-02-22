@@ -21,6 +21,8 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.ict2105_team05_2017.R;
 import com.ict2105_team05_2017.fragments.CurrentFriendsFragment;
 import com.ict2105_team05_2017.fragments.FacebookFriendsFragment;
+import com.ict2105_team05_2017.model.Token;
+import com.ict2105_team05_2017.utils.TokenStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private TokenStore tokenLocalStore;
 
 
     @Override
@@ -41,8 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-
+        tokenLocalStore=new TokenStore(this);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
@@ -64,7 +66,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        updateFirebaseToken();
+        if (!tokenLocalStore.getToken()){
+            updateFirebaseToken();
+        }
+
     }
 
     private void onSignOutSuccess() {
@@ -107,6 +112,9 @@ public class MainActivity extends AppCompatActivity {
         Log.e(TAG, "This is the Token: " + refreshToken);
         assert currentUser != null;
         mFirebaseDatabase.child("users_data").child(currentUser.getUid()).child("token").setValue(refreshToken);
+        Token token = new Token(refreshToken);
+        tokenLocalStore.setTokenStore(token);
+        tokenLocalStore.setToken(true);
     }
 
     private void setupViewPager(ViewPager viewPager) {

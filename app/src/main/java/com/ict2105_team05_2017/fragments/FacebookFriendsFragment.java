@@ -150,50 +150,57 @@ public class FacebookFriendsFragment extends Fragment implements OnLoadUsers, On
 
                 if (!Objects.equals(currentUserId, id) && user.getId() != null && !user.getId().isEmpty() && user.getName() != null && !user.getName().isEmpty()) {
                     Log.e(TAG, "This is the USer Id!! Current User " + id + name);
-
-
+               Log.e(TAG,  "Get the Provider data: !! " +firebaseUser.getProviderId());
                     ///Getting friends From FaceBook
-                    new GraphRequest(
-                            AccessToken.getCurrentAccessToken(),
-                            "/me/friends",
-                            null,
-                            HttpMethod.GET,
-                            response -> {
-                                JSONObject responseJSON = response.getJSONObject();
-                                if (responseJSON != null) {
-                                    Log.e(TAG, responseJSON.toString());
+                  if (AccessToken.getCurrentAccessToken() != null){
+                      new GraphRequest(
+                              AccessToken.getCurrentAccessToken(),
+                              "/me/friends",
+                              null,
+                              HttpMethod.GET,
+                              response -> {
+                                  JSONObject responseJSON = response.getJSONObject();
+                                  if (responseJSON != null) {
+                                      Log.e(TAG, responseJSON.toString());
 
-                                    //Querying the USer
-                                    String fbId = user.getFacebookId();
-                                    Log.e(TAG, "This is the Id From FB " + fbId);
-                                    String userFBId = ExtractIdsForJSONIDs.extractIdsForFaceBook(responseJSON);
+                                      //Querying the USer
+                                      String fbId = user.getFacebookId();
+                                      Log.e(TAG, "This is the Id From FB " + fbId);
+                                      String userFBId = ExtractIdsForJSONIDs.extractIdsForFaceBook(responseJSON);
 
-                                    if (Objects.equals(fbId, userFBId)) {
-                                        Log.e(TAG, "This is the Id From FB !! is True " + userFBId + " " + fbId);
-                                        Friends friend = new Friends();
-                                        friend.setAfriendFromFb(true);
-                                        user.setFriends(friend);
+                                      if (Objects.equals(fbId, userFBId)) {
+                                          Log.e(TAG, "This is the Id From FB !! is True " + userFBId + " " + fbId);
+                                          Friends friend = new Friends();
+                                          friend.setAfriendFromFb(true);
+                                          user.setFriends(friend);
 
-                                    } else {
-                                        Log.e(TAG, "This is the Id From FB !! is False" + userFBId + " " + fbId);
-                                        Friends friend = new Friends();
-                                        friend.setAfriendFromFb(false);
-                                        user.setFriends(friend);
+                                      } else {
+                                          Log.e(TAG, "This is the Id From FB !! is False" + userFBId + " " + fbId);
+                                          Friends friend = new Friends();
+                                          friend.setAfriendFromFb(false);
+                                          user.setFriends(friend);
 
-                                    }
-                                    userList.add(user);
+                                      }
+                                      userList.add(user);
+                                      faceBookFriendsAdapter.updateFriends(userList);
+                                  } else {
+                                      Log.e(TAG, "Object is null");
 
-
-                                    faceBookFriendsAdapter.updateFriends(userList);
-
-
-                                } else {
-                                    Log.e(TAG, "Object is null");
-
-                                }
+                                  }
         /* handle the result */
-                            }
-                    ).executeAsync();
+                              }
+                      ).executeAsync();
+                  }else {
+                      Friends friend = new Friends();
+                      friend.setAfriendFromFb(false);
+                      user.setFriends(friend);
+                      userList.add(user);
+                      faceBookFriendsAdapter.updateFriends(userList);
+
+                  }
+
+
+
 
                 } else {
                     Log.e(TAG, "This is the USer Id!! " + id + name);

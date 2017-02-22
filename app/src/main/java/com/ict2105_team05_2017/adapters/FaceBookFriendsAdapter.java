@@ -76,7 +76,7 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
     public void onBindViewHolder(final FaceBookFriendsAdapter.ViewHolder holder, int position) {
 
 
-        Set<User> usersWithoutDuplicate= new LinkedHashSet<>(friendsList);
+        Set<User> usersWithoutDuplicate = new LinkedHashSet<>(friendsList);
         friendsList.clear();
         friendsList.addAll(usersWithoutDuplicate);
         final User mUser = friendsList.get(position);
@@ -88,27 +88,19 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
         if (mUser.getFacebookId() != null) {
             holder.profilePick.setProfileId(mUser.getFacebookId());
         }
-
+        try {
             if (mUser.getFriends().getAfriendFromFb()) {
                 holder.isFromFacebook.setText("Facebook Friend");
 
             } else {
                 holder.isFromFacebook.setVisibility(View.GONE);
 
+            }
+        } catch (NullPointerException e) {
+
+
         }
 
-
-        holder.sendRequest.setText("Send Request");
-        holder.acceptRequest.setVisibility(View.GONE);
-        holder.rejectRequest.setVisibility(View.GONE);
-
-
-        holder.sendRequest.setOnClickListener(view -> {
-            Log.e(TAG, "This is the faceBook Id: " + mUser.getId());
-            sendmUserRequest(mUser);
-
-
-        });
 
         assert firebaseUser != null;
 
@@ -163,23 +155,25 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
                         String name = (String) userSnapshot.child("name").getValue();
 
 
-                        if (acccept && !decline && isFreind) {
+                        if (acccept) {
                             //Accepted FriendShip
                             Log.e(TAG, "Accepted FriendShip " + name);
-
+                            holder.sendRequest.setVisibility(View.GONE);
                             holder.actionButtons.setVisibility(View.GONE);
-                            holder.friendship_status.setText("Friend");
+                            holder.friendship_status.setText(R.string.friend);
 
 
-
-                        } else if (!sentFriendRequest && !acccept && !decline) {
+                        }
+                        if (!sentFriendRequest && !acccept && !decline) {
                             // User has Friend Request
                             Log.e(TAG, "User has Friend Request " + name);
                             holder.friendship_status.setVisibility(View.GONE);
                             holder.sendRequest.setVisibility(View.GONE);
-                            holder.rejectRequest.setText("Decline Request");
+                            holder.acceptRequest.setVisibility(View.VISIBLE);
+                            holder.rejectRequest.setVisibility(View.VISIBLE);
+                            holder.rejectRequest.setText(R.string.decline_Request);
                             holder.rejectRequest.setOnClickListener(view -> decliningFriendRequest(mUser));
-                            holder.acceptRequest.setText("Accept Friend Request");
+                            holder.acceptRequest.setText(R.string.accept_Friend_Request);
                             holder.acceptRequest.setOnClickListener(view -> acceptingFriendRequest(mUser));
 
 
@@ -187,8 +181,7 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
                         if (sentFriendRequest && !acccept && !decline) {
                             //Sent Friend Request
                             Log.e(TAG, "Sent Friend Request " + name);
-                            holder.friendship_status.setVisibility(View.GONE);
-                            holder.sentFriendRequest.setText("Sent Friend Request");
+                            holder.friendship_status.setText(R.string.Sent_Friend_Request);
                             holder.actionButtons.setVisibility(View.GONE);
 
 
@@ -197,15 +190,26 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
                             //Rejected FriendShip
                             Log.e(TAG, "Rejected FriendShip " + name);
                             holder.actionButtons.setVisibility(View.GONE);
-                            holder.friendship_status.setText("Declined Friend Request");
+                            holder.friendship_status.setText(R.string.Declined_Friend_Request);
 
 
-                        } else if (!sentFriendRequest && !acccept && decline) {
+                        }
+                        if (!sentFriendRequest && !acccept && decline) {
                             //User Rejected Friend Request
                             Log.e(TAG, "User Rejected Friend Request " + name);
                             holder.actionButtons.setVisibility(View.GONE);
-                            holder.friendship_status.setText("You Declined");
+                            holder.friendship_status.setText(R.string.You_Declined);
                         }
+                    } else {
+                        holder.sendRequest.setText(R.string.send_Request);
+                        holder.rejectRequest.setVisibility(View.GONE);
+                        holder.acceptRequest.setVisibility(View.GONE);
+                        holder.sendRequest.setOnClickListener(view -> {
+                            Log.e(TAG, "This is the faceBook Id: " + mUser.getId());
+                            sendmUserRequest(mUser);
+
+
+                        });
                     }
 
 
@@ -415,7 +419,6 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
         }
 
 
-
     }
 
     public void swap(int firstPosition, int secondPosition) {
@@ -433,7 +436,6 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
         private TextView rejectRequest;
         private TextView friendship_status;
         private LinearLayout actionButtons;
-        private TextView sentFriendRequest;
         private TextView dismiss;
         private CardView cardView;
 
@@ -447,8 +449,7 @@ public class FaceBookFriendsAdapter extends RecyclerView.Adapter<FaceBookFriends
             rejectRequest = (TextView) itemView.findViewById(R.id.rejectRequest);
             friendship_status = (TextView) itemView.findViewById(R.id.friendship_status);
             actionButtons = (LinearLayout) itemView.findViewById(R.id.actionButtons);
-            sentFriendRequest = (TextView) itemView.findViewById(R.id.sentFriendRequest);
-            dismiss = (TextView) itemView.findViewById(R.id.dismiss);
+
             cardView = (CardView) itemView.findViewById(R.id.friend_list);
 
 

@@ -54,6 +54,7 @@ public class CurrentFriendsFragment extends Fragment {
     private FirebaseDatabase mFirebaseInstance;
     private OnuserFinishedLoading onuserFinishedLoading;
     private OnLoadUsers loadUsers;
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -110,10 +111,11 @@ public class CurrentFriendsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
+
     public void getUsers() {
-        FirebaseUser currentUser= mAuth.getCurrentUser();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
         assert currentUser != null;
-        String currentUserId= currentUser.getUid();
+        String currentUserId = currentUser.getUid();
         Query myUsersQuery = mFirebaseDatabase.child("users_data").child(currentUserId).child("friends");
 
         // User data change listener
@@ -125,32 +127,42 @@ public class CurrentFriendsFragment extends Fragment {
                 String key = dataSnapshot.getKey();
 
                 final Friends friends = dataSnapshot.getValue(Friends.class);
-                boolean isAFriend= friends.getFriend();
-                boolean accepted= friends.getAcceptedRequest();
-                User user= new User();
-                if (isAFriend&&accepted){
-                   String name= friends.getName();
+                boolean isAFriend = friends.getFriend();
+                boolean accepted = friends.getAcceptedRequest();
+                User user = new User();
+
+                if (isAFriend && accepted) {
+                    String name = friends.getName();
                     user.setName(name);
-                    String email=friends.getEmail();
+                    String email = friends.getEmail();
                     user.setEmail(email);
-                    if (friends.getFbId() != null && !friends.getFbId().isEmpty()){
-                        String fbId=friends.getFbId();
+                    String id = friends.getId();
+                    user.setId(id);
+                    Friends userFriend = new Friends();
+                    userFriend.setAcceptedRequest(true);
+                    userFriend.setFriend(true);
+                    userFriend.setFriendshipDeclined(false);
+                    user.setFriends(userFriend);
+
+                    if (friends.getFbId() != null && !friends.getFbId().isEmpty()) {
+                        String fbId = friends.getFbId();
                         user.setFacebookId(fbId);
                     }
-                    if (friends.getAfriendFromFb()){
-                        Friends fbFrd=new Friends();
+                    if (friends.getAfriendFromFb()) {
+
+                        Friends fbFrd = new Friends();
                         fbFrd.setAfriendFromFb(true);
                         user.setFriends(fbFrd);
+                    } else {
+                        Friends fbFrd = new Friends();
+                        fbFrd.setAfriendFromFb(false);
+                        user.setFriends(fbFrd);
                     }
+
                     userList.add(user);
                     faceBookFriendsAdapter.updateFriends(userList);
 
                 }
-
-
-
-
-
 
 
             }

@@ -53,4 +53,11 @@
     <string name="notif_message_accpting">You have a new Friend!</string>
     <string name="notif_message_declining">You have new message</string>
     <string name="notif_message_sending">You have a new friend request</string>
+    <string name="Sent_Friend_Request">Sent Friend Request</string>
+    <string name="Declined_Friend_Request">Declined Friend Request</string>
+    <string name="You_Declined">You Declined</string>
+    <string name="accept_Friend_Request">Accept Friend Request</string>
+    <string name="decline_Request">Decline Request</string>
+    <string name="friend">Friend</string>
+    <string name="send_Request">Send Request</string>
 </resources>

@@ -44,21 +44,7 @@
             android:layout_alignParentRight="true"
             android:textAlignment="textEnd" />
 
-        <TextView
-            android:id="@+id/sentFriendRequest"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@+id/friendship_status"
-            android:layout_marginBottom="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_weight="0.5"
-            android:paddingBottom="10dp"
-            android:paddingLeft="@dimen/feed_item_status_pad_left_right"
-            android:paddingRight="@dimen/feed_item_status_pad_left_right"
-            android:paddingTop="10dp"
-            android:textColor="@android:color/holo_green_dark" />
+
 
         <LinearLayout
             android:id="@+id/actionButtons"
@@ -110,18 +96,7 @@
 
 
         </LinearLayout>
-        <TextView
-            android:id="@+id/dismiss"
-            android:layout_below="@+id/actionButtons"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="dismiss"
-            android:padding="8dp"
-            android:visibility="gone"
-            android:background="@drawable/bg_btn_add_it"
-            android:layout_marginBottom="16dp"
-            />
+
 
     </RelativeLayout>
 
